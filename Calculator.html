@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Calculator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' };
+  </script>
+  <style>
+    .btn { transition: all 0.1s ease-in-out; }
+    .btn:active { transform: scale(0.95); }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+  </style>
+</head>
+<body class="bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-white min-h-screen flex items-center justify-center p-4 transition-colors duration-300 font-sans">
+
+  <div class="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row">
+    
+    <!-- Main Calculator Section -->
+    <div class="flex-1 p-6 flex flex-col justify-between">
+      <!-- Top Bar -->
+      <div class="flex justify-between items-center mb-4">
+        <span class="font-bold text-sm tracking-wider uppercase text-slate-400">Calculator</span>
+        <div class="flex gap-2">
+          <button id="soundToggle" title="Toggle Sound" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm">🔊</button>
+          <button id="themeToggle" title="Toggle Theme" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-sm">🌙</button>
+          <button id="copyBtn" title="Copy Result" class="px-3 py-1.5 rounded-xl bg-indigo-500/10 text-indigo-500 hover:bg-indigo-500/20 text-xs font-semibold">Copy</button>
+        </div>
+      </div>
+
+      <!-- Display Screen -->
+      <div class="bg-slate-50 dark:bg-slate-950/60 p-5 rounded-2xl mb-5 text-right flex flex-col justify-end min-h-[120px] border border-slate-200/60 dark:border-slate-800/80 relative overflow-hidden">
+        <div id="toast" class="absolute top-3 left-3 bg-indigo-600 text-white text-xs px-2.5 py-1 rounded-lg opacity-0 transition-opacity duration-200">Copied!</div>
+        <div id="expression" class="text-slate-400 dark:text-slate-500 text-sm min-h-[20px] truncate"></div>
+        <div id="display" class="text-4xl font-bold tracking-tight truncate mt-1">0</div>
+      </div>
+
+      <!-- Keypad -->
+      <div class="grid grid-cols-4 gap-3">
+        <button onclick="clearAll()" class="btn p-4 rounded-2xl bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 font-bold text-lg">AC</button>
+        <button onclick="toggleSign()" class="btn p-4 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 font-semibold text-lg">±</button>
+        <button onclick="percentage()" class="btn p-4 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 font-semibold text-lg">%</button>
+        <button onclick="chooseOp('/')" class="btn p-4 rounded-2xl bg-indigo-500/15 text-indigo-500 hover:bg-indigo-500/25 font-bold text-xl">÷</button>
+
+        <button onclick="appendNum('7')" class="btn p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-800 font-semibold text-xl">7</button>
+        <button onclick="appendNum('8')" class="btn p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-800 font-semibold text-xl">8</button>
+        <button onclick="appendNum('9')" class="btn p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-800 font-semibold text-xl">9</button>
+        <button onclick="chooseOp('*')" class="btn p-4 rounded-2xl bg-indigo-500/15 text-indigo-500 hover:bg-indigo-500/25 font-bold text-xl">×</button>
+
+        <button onclick="appendNum('4')" class="btn p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-800 font-semibold text-xl">4</button>
+        <button onclick="appendNum('5')" class="btn p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-800 font-semibold text-xl">5</button>
+        <button onclick="appendNum('6')" class="btn p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-800 font-semibold text-xl">6</button>
+        <button onclick="chooseOp('-')" class="btn p-4 rounded-2xl bg-indigo-500/15 text-indigo-500 hover:bg-indigo-500/25 font-bold text-xl">−</button>
+
+        <button onclick="appendNum('1')" class="btn p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-800 font-semibold text-xl">1</button>
+        <button onclick="appendNum('2')" class="btn p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-800 font-semibold text-xl">2</button>
+        <button onclick="appendNum('3')" class="btn p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-800 font-semibold text-xl">3</button>
+        <button onclick="chooseOp('+')" class="btn p-4 rounded-2xl bg-indigo-500/15 text-indigo-500 hover:bg-indigo-500/25 font-bold text-xl">+</button>
+
+        <button onclick="appendNum('0')" class="btn p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-800 font-semibold text-xl">0</button>
+        <button onclick="appendNum('.')" class="btn p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-800 font-bold text-xl">.</button>
+        <button onclick="backspace()" class="btn p-4 rounded-2xl bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-800 font-semibold text-lg">⌫</button>
+        <button onclick="compute()" class="btn p-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xl shadow-lg shadow-indigo-600/30">=</button>
+      </div>
+    </div>
+
+    <!-- History Sidebar -->
+    <div class="w-full md:w-64 bg-slate-50 dark:bg-slate-950/40 border-t md:border-t-0 md:border-l border-slate-200 dark:border-slate-800 p-5 flex flex-col justify-between max-h-60 md:max-h-none">
+      <div>
+        <div class="flex justify-between items-center mb-3">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">History</span>
+          <button onclick="clearHistory()" class="text-xs text-rose-500 hover:underline">Clear</button>
+        </div>
+        <div id="historyList" class="space-y-2 overflow-y-auto max-h-40 md:max-h-[380px] pr-1 text-right">
+          <p class="text-xs text-slate-400 text-center py-8">No calculations yet</p>
+        </div>
+      </div>
+      <div class="text-[11px] text-slate-400 text-center mt-4 border-t border-slate-200 dark:border-slate-800/80 pt-3">
+        Supports Keyboard Input
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let current = '0', previous = '', operation = null, shouldReset = false;
+    let soundEnabled = true;
+    let history = [];
+
+    const displayEl = document.getElementById('display');
+    const exprEl = document.getElementById('expression');
+    const historyEl = document.getElementById('historyList');
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playClick() {
+      if (!soundEnabled) return;
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.04);
+    }
+
+    function updateDisplay() {
+      displayEl.textContent = current;
+      displayEl.className = `font-bold tracking-tight truncate mt-1 ${current.length > 10 ? 'text-2xl' : 'text-4xl'}`;
+      if (operation != null) {
+        const symbols = { '+': '+', '-': '−', '*': '×', '/': '÷' };
+        exprEl.textContent = `${previous} ${symbols[operation]}`;
+      } else {
+        exprEl.textContent = '';
+      }
+    }
+
+    function appendNum(num) {
+      playClick();
+      if (current === '0' || shouldReset) {
+        current = num === '.' ? '0.' : num;
+        shouldReset = false;
+      } else {
+        if (num === '.' && current.includes('.')) return;
+        if (current.length >= 15) return;
+        current += num;
+      }
+      updateDisplay();
+    }
+
+    function chooseOp(op) {
+      playClick();
+      if (operation !== null && !shouldReset) compute();
+      previous = current;
+      operation = op;
+      shouldReset = true;
+      updateDisplay();
+    }
+
+    function compute() {
+      playClick();
+      if (operation === null || shouldReset) return;
+      const prev = parseFloat(previous);
+      const curr = parseFloat(current);
+      if (isNaN(prev) || isNaN(curr)) return;
+      let res;
+      switch (operation) {
+        case '+': res = prev + curr; break;
+        case '-': res = prev - curr; break;
+        case '*': res = prev * curr; break;
+        case '/': res = curr === 0 ? 'Error' : prev / curr; break;
+      }
+      const symbols = { '+': '+', '-': '−', '*': '×', '/': '÷' };
+      const formattedRes = res === 'Error' ? 'Error' : Number(Math.round(res + 'e10') + 'e-10').toString();
+      addHistory(`${previous} ${symbols[operation]} ${current}`, formattedRes);
+      current = formattedRes;
+      operation = null;
+      shouldReset = true;
+      updateDisplay();
+    }
+
+    function clearAll() {
+      playClick();
+      current = '0';
+      previous = '';
+      operation = null;
+      updateDisplay();
+    }
+
+    function backspace() {
+      playClick();
+      if (shouldReset || current === 'Error') { current = '0'; shouldReset = false; }
+      else { current = current.length > 1 ? current.slice(0, -1) : '0'; }
+      updateDisplay();
+    }
+
+    function toggleSign() {
+      playClick();
+      if (current !== '0' && current !== 'Error') {
+        current = current.startsWith('-') ? current.slice(1) : '-' + current;
+        updateDisplay();
+      }
+    }
+
+    function percentage() {
+      playClick();
+      if (current !== 'Error') {
+        current = (parseFloat(current) / 100).toString();
+        updateDisplay();
+      }
+    }
+
+    function addHistory(expr, res) {
+      history.unshift({ expr, res });
+      renderHistory();
+    }
+
+    function renderHistory() {
+      if (history.length === 0) {
+        historyEl.innerHTML = '<p class="text-xs text-slate-400 text-center py-8">No calculations yet</p>';
+        return;
+      }
+      historyEl.innerHTML = history.map((item, idx) => `
+        <div onclick="loadHistory(${idx})" class="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 cursor-pointer hover:border-indigo-500 transition">
+          <div class="text-xs text-slate-400">${item.expr} =</div>
+          <div class="text-sm font-bold text-indigo-500">${item.res}</div>
+        </div>
+      `).join('');
+    }
+
+    function loadHistory(idx) {
+      playClick();
+      current = history[idx].res;
+      shouldReset = true;
+      updateDisplay();
+    }
+
+    function clearHistory() {
+      playClick();
+      history = [];
+      renderHistory();
+    }
+
+    document.getElementById('themeToggle').addEventListener('click', (e) => {
+      document.documentElement.classList.toggle('dark');
+      e.target.textContent = document.documentElement.classList.contains('dark') ? '🌙' : '☀️';
+    });
+
+    document.getElementById('soundToggle').addEventListener('click', (e) => {
+      soundEnabled = !soundEnabled;
+      e.target.textContent = soundEnabled ? '🔊' : '🔇';
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', () => {
+      navigator.clipboard.writeText(current);
+      const toast = document.getElementById('toast');
+      toast.style.opacity = '1';
+      setTimeout(() => toast.style.opacity = '0', 1500);
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key >= '0' && e.key <= '9') appendNum(e.key);
+      if (e.key === '.') appendNum('.');
+      if (e.key === '=' || e.key === 'Enter') { e.preventDefault(); compute(); }
+      if (e.key === 'Backspace') backspace();
+      if (e.key === 'Escape') clearAll();
+      if (['+', '-', '*', '/'].includes(e.key)) chooseOp(e.key);
+    });
+  </script>
+</body>
+</html>
